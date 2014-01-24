@@ -1,4 +1,4 @@
 SmartTv-Demo-App
 ================
 
-SmartTv demo
+SmartTv demo app made with smartbox
