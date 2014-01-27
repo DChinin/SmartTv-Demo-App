@@ -258,43 +258,44 @@
 
 		/**
 		 * Asynchroniosly adding platform files
+     * @param filesArray {Array} array of sources of javascript files
 		 * @param cb {Function} callback on load javascript files
 		 */
-		addExternalJS: function (filesArray ,cb) {
-			var defferedArray = [],
-				$externalJsContainer;
+    addExternalJS: function ( filesArray, cb ) {
+      var $externalJsContainer,
+        loadedScripts = 0,
+        len = filesArray.length,
+        el,
+        scriptEl;
 
-			if ( filesArray.length ) {
+      if ( filesArray.length ) {
 
-				$externalJsContainer = document.createDocumentFragment();
+        $externalJsContainer = document.createDocumentFragment();
+        el = document.createElement('script');
+        el.type = 'text/javascript';
+        el.onload = onloadScript;
 
-				_.each(filesArray, function ( src ) {
+        for ( var i = 0; i < len; i++ ) {
+          scriptEl = el.cloneNode();
+          scriptEl.src = filesArray[i];
+          $externalJsContainer.appendChild(scriptEl);
+        }
 
-					var d = $.Deferred(),
-						el = document.createElement('script');
+        function onloadScript () {
+          loadedScripts++;
 
-					el.onload = function() {
-						d.resolve();
-						el.onload = null;
-					};
+          if ( loadedScripts === len ) {
+            cb && cb.call();
+          }
+        }
 
-					el.type = 'text/javascript';
-					el.src = src;
+        document.body.appendChild($externalJsContainer);
+      } else {
 
-					defferedArray.push(d);
-					$externalJsContainer.appendChild(el);
-				});
-
-				document.body.appendChild($externalJsContainer);
-				$.when.apply($, defferedArray).done(function () {
-					cb && cb.call();
-				});
-			} else {
-
-				// if no external js simple call cb
-				cb && cb.call(this);
-			}
-		},
+        // if no external js simple call cb
+        cb && cb.call(this);
+      }
+    },
 
 		addExternalCss: function (filesArray) {
 			var $externalCssContainer;
@@ -583,7 +584,7 @@
 
 			//jump to next input if is set
 			if ( text.length === opt.max &&
-					 opt.next !== undefined &&
+					 opt.next &&
 					 opt.max != 0 ) {
 				this.hideKeyboard();
 				$$nav.current(opt.next);
@@ -3054,153 +3055,159 @@ if (navigator.userAgent.toLowerCase().indexOf('maple') != -1) {
 /**
  * Samsung platform
  */
-!(function ( window, undefined  ) {
+!(function ( window, undefined ) {
 
-	var platform = new window.SB.Platform('samsung'),
-		/**
-		 * Native plugins
-		 * id: clsid (DOM element id : CLSID)
-		 * @type {{object}}
-		 */
-			plugins = {
-			audio: 'SAMSUNG-INFOLINK-AUDIO',
-			pluginObjectTV: 'SAMSUNG-INFOLINK-TV',
-			pluginObjectTVMW: 'SAMSUNG-INFOLINK-TVMW',
-			pluginObjectNetwork: 'SAMSUNG-INFOLINK-NETWORK',
-			pluginObjectNNavi: 'SAMSUNG-INFOLINK-NNAVI'
-		},
-		platformObj,
-		detectResult = false;
+  var platform = new window.SB.Platform('samsung'),
+    /**
+     * Native plugins
+     * id: clsid (DOM element id : CLSID)
+     * @type {{object}}
+     */
+      plugins = {
+        audio: 'SAMSUNG-INFOLINK-AUDIO',
+        pluginObjectTV: 'SAMSUNG-INFOLINK-TV',
+        pluginObjectTVMW: 'SAMSUNG-INFOLINK-TVMW',
+        pluginObjectNetwork: 'SAMSUNG-INFOLINK-NETWORK',
+        pluginObjectNNavi: 'SAMSUNG-INFOLINK-NNAVI'
+      },
+    samsungFiles = [
+      '$MANAGER_WIDGET/Common/af/../webapi/1.0/deviceapis.js',
+      '$MANAGER_WIDGET/Common/af/../webapi/1.0/serviceapis.js',
+      '$MANAGER_WIDGET/Common/af/2.0.0/extlib/jquery.tmpl.js',
+      '$MANAGER_WIDGET/Common/Define.js',
+      '$MANAGER_WIDGET/Common/af/2.0.0/sf.min.js',
+      '$MANAGER_WIDGET/Common/API/Widget.js',
+      '$MANAGER_WIDGET/Common/API/TVKeyValue.js',
+      '$MANAGER_WIDGET/Common/API/Plugin.js',
+      'src/platforms/samsung/localstorage.js'
+    ],
+    platformObj,
+    detectResult = false;
 
-	detectResult = navigator.userAgent.search(/Maple/) > -1;
+  detectResult = navigator.userAgent.search(/Maple/) > -1;
 
-	// non-standart inserting objects in DOM (i'm looking at you 2011 version)
-	// in 2011 samsung smart tv's we can't add objects if document is ready
-	if (detectResult) {
-		var objectsString = '';
-		for ( var id in plugins ) {
-			objectsString += '<object id=' + id +' border=0 classid="clsid:' + plugins[id] +'" style="opacity:0.0;background-color:#000000;width:0px;height:0px;"></object>';
-		}
-		document.write(objectsString);
-	}
+  // non-standart inserting objects in DOM (i'm looking at you 2011 version)
+  // in 2011 samsung smart tv's we can't add objects if document is ready
+  if ( detectResult ) {
+    var htmlString = '';
+    for ( var i = 0; i < samsungFiles.length; i++ ) {
+      htmlString += '<script type="text/javascript" src="'+ samsungFiles[i] +'"></script>';
+    }
+    for ( var id in plugins ) {
+      htmlString += '<object id=' + id + ' border=0 classid="clsid:' + plugins[id] + '" style="opacity:0.0;background-color:#000000;width:0px;height:0px;"></object>';
+    }
+    document.write(htmlString);
+  }
 
-	platformObj = {
+  platformObj = {
 
-		keys: {
+    keys: {
 
-		},
+    },
 
-		externalJs: [
-			'$MANAGER_WIDGET/Common/af/../webapi/1.0/deviceapis.js',
-			'$MANAGER_WIDGET/Common/af/../webapi/1.0/serviceapis.js',
-			'$MANAGER_WIDGET/Common/af/2.0.0/extlib/jquery.tmpl.js',
-			'$MANAGER_WIDGET/Common/Define.js',
-			'$MANAGER_WIDGET/Common/af/2.0.0/sf.min.js',
-			'$MANAGER_WIDGET/Common/API/Widget.js',
-			'$MANAGER_WIDGET/Common/API/TVKeyValue.js',
-			'$MANAGER_WIDGET/Common/API/Plugin.js',
-			'src/platforms/samsung/localstorage.js'
-		],
+    externalJs: [
+    ],
 
-		$plugins: {},
+    $plugins: {},
 
-		detect: function () {
-			return detectResult;
-		},
+    detect: function () {
+      return detectResult;
+    },
 
-		initialise: function () {},
+    initialise: function () {
+    },
 
-		getNativeDUID: function () {
-			return this.$plugins.pluginObjectNNavi.GetDUID(this.getMac());
-		},
+    getNativeDUID: function () {
+      return this.$plugins.pluginObjectNNavi.GetDUID(this.getMac());
+    },
 
-		getMac: function () {
-			return this.$plugins.pluginObjectNetwork.GetMAC();
-		},
+    getMac: function () {
+      return this.$plugins.pluginObjectNetwork.GetMAC();
+    },
 
-		getSDI: function () {
-			this.SDI = this.SDIPlugin.Execute('GetSDI_ID');
-			return this.SDI;
-		},
+    getSDI: function () {
+      this.SDI = this.SDIPlugin.Execute('GetSDI_ID');
+      return this.SDI;
+    },
 
-		/**
-		 * Return hardware version for 2013 samsung only
-		 * @returns {*}
-		 */
-		getHardwareVersion: function () {
-			var version = this.firmware.match(/\d{4}/) || [];
-			if (version[0] === '2013') {
-				this.hardwareVersion = sf.core.sefplugin('Device').Execute('Firmware');
-			} else {
-				this.hardwareVersion = null;
-			}
-			return this.hardwareVersion;
-		},
+    /**
+     * Return hardware version for 2013 samsung only
+     * @returns {*}
+     */
+    getHardwareVersion: function () {
+      var version = this.firmware.match(/\d{4}/) || [];
+      if ( version[0] === '2013' ) {
+        this.hardwareVersion = sf.core.sefplugin('Device').Execute('Firmware');
+      } else {
+        this.hardwareVersion = null;
+      }
+      return this.hardwareVersion;
+    },
 
-		setPlugins: function () {
-			var self = this;
+    setPlugins: function () {
+      var self = this;
 
-			_.each(plugins, function ( clsid, id ) {
-				self.$plugins[id] = document.getElementById(id);
-			});
+      _.each(plugins, function ( clsid, id ) {
+        self.$plugins[id] = document.getElementById(id);
+      });
 
-			this.$plugins.SDIPlugin = sf.core.sefplugin('ExternalWidgetInterface');
-			this.$plugins.tvKey = new Common.API.TVKeyValue();
+      this.$plugins.SDIPlugin = sf.core.sefplugin('ExternalWidgetInterface');
+      this.$plugins.tvKey = new Common.API.TVKeyValue();
 
-			var NNAVIPlugin = this.$plugins.pluginObjectNNavi,
-				TVPlugin = this.$plugins.pluginObjectTV;
+      var NNAVIPlugin = this.$plugins.pluginObjectNNavi,
+        TVPlugin = this.$plugins.pluginObjectTV;
 
-			this.modelCode = NNAVIPlugin.GetModelCode();
-			this.firmware = NNAVIPlugin.GetFirmware();
-			this.systemVersion = NNAVIPlugin.GetSystemVersion(0);
-			this.productCode = TVPlugin.GetProductCode(1);
+      this.modelCode = NNAVIPlugin.GetModelCode();
+      this.firmware = NNAVIPlugin.GetFirmware();
+      this.systemVersion = NNAVIPlugin.GetSystemVersion(0);
+      this.productCode = TVPlugin.GetProductCode(1);
 
-			this.pluginAPI = new Common.API.Plugin();
-			this.widgetAPI = new Common.API.Widget();
+      this.pluginAPI = new Common.API.Plugin();
+      this.widgetAPI = new Common.API.Widget();
 
-			this.productType = TVPlugin.GetProductType();
-			this.setKeys();
+      this.productType = TVPlugin.GetProductType();
+      this.setKeys();
 
-			// enable standart volume indicator
-			this.pluginAPI.unregistKey(sf.key.KEY_VOL_UP);
-			this.pluginAPI.unregistKey(sf.key.KEY_VOL_DOWN);
-			this.pluginAPI.unregistKey(sf.key.KEY_MUTE);
-			NNAVIPlugin.SetBannerState(2);
-		},
+      // enable standart volume indicator
+      this.pluginAPI.unregistKey(sf.key.KEY_VOL_UP);
+      this.pluginAPI.unregistKey(sf.key.KEY_VOL_DOWN);
+      this.pluginAPI.unregistKey(sf.key.KEY_MUTE);
+      NNAVIPlugin.SetBannerState(2);
+    },
 
-		/**
-		 * Set keys for samsung platform
-		 */
-		setKeys: function () {
-			this.keys = sf.key;
-		},
+    /**
+     * Set keys for samsung platform
+     */
+    setKeys: function () {
+      this.keys = sf.key;
+    },
 
-		/**
-		 * Start screensaver
-		 * @param time
-		 */
-		enableScreenSaver: function (time) {
-			time = time || false;
-			sf.service.setScreenSaver(true, time);
-		},
+    /**
+     * Start screensaver
+     * @param time
+     */
+    enableScreenSaver: function ( time ) {
+      time = time || false;
+      sf.service.setScreenSaver(true, time);
+    },
 
-		/**
-		 * Disable screensaver
-		 */
-		disableScreenSaver: function () {
-			sf.service.setScreenSaver(false);
-		},
+    /**
+     * Disable screensaver
+     */
+    disableScreenSaver: function () {
+      sf.service.setScreenSaver(false);
+    },
 
-		exit: function () {
-			sf.core.exit(false);
-		},
+    exit: function () {
+      sf.core.exit(false);
+    },
 
-		blockNavigation: function () {
-			sf.key.preventDefault();
-		}
-	};
+    blockNavigation: function () {
+      sf.key.preventDefault();
+    }
+  };
 
-	_.extend(platform, platformObj);
+  _.extend(platform, platformObj);
 })(this);
 (function ($) {
     "use strict";

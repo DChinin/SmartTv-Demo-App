@@ -9,6 +9,7 @@
     line-height: 32px;
     border: 1px solid black;
     border-radius: 5px;
+    background: #fff;
 }
 
 .focus .smart_input-wrap {
@@ -18,7 +19,7 @@
 .smart_input-container {
     position: relative;
     display: inline-block;
-    width: 200px;
+    width: 300px;
     vertical-align: middle;
 }
 
