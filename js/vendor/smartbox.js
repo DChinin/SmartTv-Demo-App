@@ -38,14 +38,14 @@
 			readyCallbacks.push(cb);
 		},
 
-        readyForPlatform: function(platform, cb){
-            var self=this;
-            this.ready(function(){
-                if(platform==self.currentPlatform.name){
-                    cb();
-                }
-            });
-        },
+    readyForPlatform: function(platform, cb){
+        var self=this;
+        this.ready(function(){
+            if(platform==self.currentPlatform.name){
+                cb();
+            }
+        });
+    },
 
 		/**
 		 * Applying all ready callbacks
@@ -2754,6 +2754,80 @@ if (navigator.userAgent.toLowerCase().indexOf('netcast') != -1) {
     }());
 
 }
+/**
+ * Samsung platform
+ */
+!(function ( window, undefined ) {
+
+  var platform = new window.SB.Platform('philips'),
+    platformObj;
+
+  platformObj = {
+
+    externalJs: [
+    ],
+
+    $plugins: {},
+
+    detect: function () {
+      var userAgent = navigator.userAgent.toLowerCase();
+      return (userAgent.indexOf('nettv') !== -1);
+    },
+
+    initialise: function () {
+    },
+
+    getNativeDUID: function () {
+    },
+
+    getMac: function () {
+    },
+
+    getSDI: function () {
+    },
+
+    setPlugins: function () {
+      this.setKeys();
+    },
+
+    volumeEnable: function () {
+    },
+
+    setKeys: function () {
+      this.keys = {
+        ENTER: VK_ENTER,
+        PAUSE: VK_PAUSE,
+        LEFT: VK_LEFT,
+        UP: VK_UP,
+        RIGHT: VK_RIGHT,
+        DOWN: VK_DOWN,
+        N0: VK_0,
+        N1: VK_1,
+        N2: VK_2,
+        N3: VK_3,
+        N4: VK_4,
+        N5: VK_5,
+        N6: VK_6,
+        N7: VK_7,
+        N8: VK_8,
+        N9: VK_9,
+        RED: VK_RED,
+        GREEN: VK_GREEN,
+        YELLOW: VK_YELLOW,
+        BLUE: VK_BLUE,
+        RW: VK_REWIND,
+        STOP: VK_STOP,
+        PLAY: VK_PLAY,
+        FF: VK_FAST_FWD,
+        RETURN: VK_BACK,
+        CH_UP: VK_PAGE_UP,
+        CH_DOWN: VK_PAGE_DOWN
+      };
+    }
+  };
+
+  _.extend(platform, platformObj);
+})(this);
 (function () {
 
 	var localStorage = window.localStorage,
@@ -2868,8 +2942,6 @@ if (navigator.userAgent.toLowerCase().indexOf('maple') != -1) {
                     //self.$plugin = $('<object id="pluginPlayer" border=0 classid="clsid:SAMSUNG-INFOLINK-PLAYER" style="position: absolute; left: 0; top: 0; width: 1280px; height: 720px;"></object>');
                     self.plugin = document.getElementById('pluginPlayer');
                     $('body').append(self.$plugin);
-
-
                 } else {
                     self.plugin = sf.core.sefplugin('Player');
                 }
@@ -3051,7 +3123,6 @@ if (navigator.userAgent.toLowerCase().indexOf('maple') != -1) {
     }());
 
 }
-
 /**
  * Samsung platform
  */
@@ -3145,7 +3216,8 @@ if (navigator.userAgent.toLowerCase().indexOf('maple') != -1) {
     },
 
     setPlugins: function () {
-      var self = this;
+      var self = this,
+        tvKey;
 
       _.each(plugins, function ( clsid, id ) {
         self.$plugins[id] = document.getElementById(id);
@@ -3166,13 +3238,24 @@ if (navigator.userAgent.toLowerCase().indexOf('maple') != -1) {
       this.widgetAPI = new Common.API.Widget();
 
       this.productType = TVPlugin.GetProductType();
+
+      tvKey = new Common.API.TVKeyValue();
+
       this.setKeys();
 
       // enable standart volume indicator
-      this.pluginAPI.unregistKey(sf.key.KEY_VOL_UP);
-      this.pluginAPI.unregistKey(sf.key.KEY_VOL_DOWN);
-      this.pluginAPI.unregistKey(sf.key.KEY_MUTE);
+      this.pluginAPI.unregistKey(tvKey.KEY_VOL_UP);
+      this.pluginAPI.unregistKey(tvKey.KEY_VOL_DOWN);
+      this.pluginAPI.unregistKey(tvKey.KEY_MUTE);
+      this.widgetAPI.sendReadyEvent();
+
+      this.volumeEnable();
+
       NNAVIPlugin.SetBannerState(2);
+    },
+
+    volumeEnable: function () {
+      sf.service.setVolumeControl(true);
     },
 
     /**
@@ -3180,6 +3263,22 @@ if (navigator.userAgent.toLowerCase().indexOf('maple') != -1) {
      */
     setKeys: function () {
       this.keys = sf.key;
+
+      document.body.onkeydown = function(event){
+        var keyCode = event.keyCode;
+
+        switch (keyCode) {
+          case sf.key.RETURN:
+          case sf.key.EXIT:
+          case 147:
+          case 261:
+            sf.key.preventDefault();
+            break;
+          default:
+            break;
+        }
+      }
+
     },
 
     /**

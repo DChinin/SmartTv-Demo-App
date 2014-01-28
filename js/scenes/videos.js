@@ -12,6 +12,7 @@
       this.$el.on('click', '.video-item', this.onItemClick);
 
       this.renderItems(App.videos);
+
       _inited = true;
     },
 
@@ -27,6 +28,7 @@
       this.$el.hide();
     },
 
+    // handler for click event
     onItemClick: function (e) {
       var url = e.currentTarget.getAttribute('data-url');
       Player.play({
@@ -34,6 +36,7 @@
       });
     },
 
+    // showing items from videos.js
     renderItems: function (items) {
       var html = '';
 

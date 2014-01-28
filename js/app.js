@@ -8,17 +8,9 @@
 
     initialize: function () {
       this.$wrap = $('.wrap');
-      var $bg = $('.bg');
 
       Player.init();
-      Player.on('ready', function () {
-        $bg.hide();
-        $$log('player ready');
-      });
-      Player.on('stop', function () {
-        $bg.show();
-        $$log('player stop');
-      });
+
       this.setEvents();
 
       // start navigation
@@ -26,7 +18,8 @@
     },
 
     setEvents: function () {
-      var self = this;
+      var self = this,
+        $bg = $('.bg');
 
       // click on menu item
       $('.menu').on('click', '.menu-item', function ( e ) {
@@ -36,8 +29,26 @@
 
       $(document.body).on({
         // on keyboard 'd' by default
-        'nav_key:blue': _.bind(this.toggleView, this)
-      })
+        'nav_key:blue': _.bind(this.toggleView, this),
+
+        // remote events
+        'nav_key:stop': function () {
+          Player.stop();
+        },
+        'nav_key:pause': function () {
+          Player.togglePause();
+        }
+      });
+
+      // toggling background when player start/stop
+      Player.on('ready', function () {
+        $bg.hide();
+        $$log('player ready');
+      });
+      Player.on('stop', function () {
+        $bg.show();
+        $$log('player stop');
+      });
     },
 
     toggleView: function () {
