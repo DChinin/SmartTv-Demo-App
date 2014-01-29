@@ -10,6 +10,7 @@
       this.$wrap = $('.wrap');
 
       Player.init();
+      $$legend.show();
 
       this.setEvents();
 
@@ -54,8 +55,10 @@
     toggleView: function () {
       if (this.isShown) {
         this.$wrap.hide();
+        $$legend.hide();
       } else {
         this.$wrap.show();
+        $$legend.show();
       }
       this.isShown = !this.isShown;
     },
